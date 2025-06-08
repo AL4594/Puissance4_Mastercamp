@@ -3,8 +3,8 @@ class state():
         if grille is None:
             self.grille = [[' ' for _ in range(12)] for _ in range(6)]
         elif any(
-            any(grille[row][col] != ' ' and any(grille[r][col] == ' ' for r in range(row + 1, 6))
-                    for row in range(6))
+            any(grille[ligne][col] != ' ' and any(grille[l][col] == ' ' for l in range(ligne + 1, 6))
+                    for ligne in range(6))
                 for col in range(12)
             ):
             print("Grille invalide : pions flottants détectés. Une grille vide sera utilisée.")
@@ -86,6 +86,6 @@ def main():
     )
     print(s3.Terminal_test(),s3.Actions(joueur="O"))
 
-    
+
 if __name__ == '__main__':
     main()
