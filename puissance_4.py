@@ -25,7 +25,7 @@ class state():
         return [col for col in range(12) if self.grille[0][col] == ' ']
 
     def Terminal_test(self) -> bool:
-        return self.gagnant() != None or all(cell != ' ' for ligne in self.grille for cell in ligne)
+        return sum(1 for i in range(6) for j in range(12) if self.grille[i][j] != ' ')>41 or self.gagnant() != None or all(cell != ' ' for ligne in self.grille for cell in ligne)
 
     def gagnant(self) -> str:
         #retourne l'éventuel gagnant si la condition est respectée
@@ -56,6 +56,9 @@ class state():
         return None
 
     def Result(self, col_choice: int, joueur: str) -> "state":
+        if self.Terminal_test():
+            print("the game is over")
+            return None
         if self.grille[0][col_choice] != ' ':
             print("the column is full invalid choice")
             return None
@@ -66,7 +69,7 @@ def main():
     s.display()
     print(s.Actions(joueur="X"))"""
 
-    """s2=state(grille = [
+    s2=state(grille = [
     ['O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
     ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O'],
     [' ', ' ', ' ', 'X', 'X', 'X', ' ', ' ', ' ', ' ', ' ', ' '],
@@ -74,8 +77,8 @@ def main():
     ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O'],
     ['O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
     ]
-    )"""
-    s3=state(grille = [
+    )
+    """s3=state(grille = [
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', 'X', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
@@ -84,7 +87,7 @@ def main():
         ['X', 'O', 'X', 'X', 'O', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
     ]
     )
-    print(s3.Terminal_test(),s3.Actions(joueur="O"))
+    print(s3.Terminal_test(),s3.Actions(joueur="O"))"""
 
 
 if __name__ == '__main__':
