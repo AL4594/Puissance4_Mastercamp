@@ -1,3 +1,6 @@
+from copy import deepcopy
+
+
 class state():
     def __init__(self, grille=None, joueur="X"):
         if grille is None:
@@ -63,13 +66,17 @@ class state():
             print("the column is full invalid choice")
             return None
         # on doit check quelle est la ligne la plus basse dans laquelle la piece va tomber dans la colonne choisie et retourner le state apres avoir changé
+        lowest_line=next(i for i in range(5,0,-1) if self.grille[i][col_choice] == ' ')
+        grille=deepcopy(self.grille)
+        grille[lowest_line][col_choice]=joueur
+        return state(grille=grille, joueur=joueur)
 
 def main():
     """s=state()
     s.display()
     print(s.Actions(joueur="X"))"""
 
-    s2=state(grille = [
+    """s2=state(grille = [
     ['O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
     ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O'],
     [' ', ' ', ' ', 'X', 'X', 'X', ' ', ' ', ' ', ' ', ' ', ' '],
@@ -77,8 +84,9 @@ def main():
     ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O'],
     ['O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
     ]
-    )
-    """s3=state(grille = [
+    )"""
+
+    s3=state(grille = [
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', 'X', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
@@ -87,7 +95,8 @@ def main():
         ['X', 'O', 'X', 'X', 'O', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
     ]
     )
-    print(s3.Terminal_test(),s3.Actions(joueur="O"))"""
+    print(s3.Terminal_test(),s3.Actions(joueur="O"))
+    s3.Result(col_choice=2, joueur="X").display()
 
 
 if __name__ == '__main__':
