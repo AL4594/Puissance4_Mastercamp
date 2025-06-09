@@ -17,7 +17,7 @@ class state():
         self.joueur = joueur
 
 
-    def display(self)->None:
+    def Display(self)->None:
         print("    " + "  ".join(f"{i:2}" for i in range(12)))
         print("   " + "-" * (4 * 12 + 1))
         for i, ligne in enumerate(self.grille):
@@ -30,7 +30,7 @@ class state():
     def Terminal_test(self) -> bool:
         return sum(1 for i in range(6) for j in range(12) if self.grille[i][j] != ' ')>41 or self.gagnant() != None or all(cell != ' ' for ligne in self.grille for cell in ligne)
 
-    def gagnant(self) -> str:
+    def Gagnant(self) -> str:
         #retourne l'éventuel gagnant si la condition est respectée
         lignes = 6
         cols = 12
@@ -70,6 +70,12 @@ class state():
         grille=deepcopy(self.grille)
         grille[lowest_line][col_choice]=joueur
         return state(grille=grille, joueur=joueur)
+
+    def Adversaire(self,joueur:str)->str:
+        return "X" if joueur=="O" else "O"
+
+    def Utility(self,joueur_vise:str)->int:
+        return 1 if self.Gagnant() == joueur_vise else -1 if self.Gagnant() == self.Adversaire(joueur_vise) else 0
 
 def main():
     """s=state()
