@@ -28,7 +28,7 @@ class state():
         return [col for col in range(12) if self.grille[0][col] == ' ']
 
     def Terminal_test(self) -> bool:
-        return sum(1 for i in range(6) for j in range(12) if self.grille[i][j] != ' ')>41 or self.gagnant() != None or all(cell != ' ' for ligne in self.grille for cell in ligne)
+        return sum(1 for i in range(6) for j in range(12) if self.grille[i][j] != ' ')>41 or self.Gagnant() != None or all(cell != ' ' for ligne in self.grille for cell in ligne)
 
     def Gagnant(self) -> str:
         #retourne l'éventuel gagnant si la condition est respectée
@@ -102,7 +102,7 @@ def main():
     ]
     )
     print(s3.Terminal_test(),s3.Actions(joueur="O"))
-    s3.Result(col_choice=2, joueur="X").display()
+    s3.Result(col_choice=2, joueur="X").Display()
 
 
 if __name__ == '__main__':
