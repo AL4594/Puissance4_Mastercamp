@@ -2,7 +2,7 @@ from copy import deepcopy
 
 
 class state():
-    def __init__(self, grille=None, joueur="X"):
+    def __init__(self, grille=None, joueur="1"):
         if grille is None:
             self.grille = [[' ' for _ in range(12)] for _ in range(6)]
         elif any(
@@ -16,12 +16,12 @@ class state():
             self.grille = grille
         self.joueur = joueur
 
-
-    def Display(self)->None:
+    def Display(self) -> None:
         print("    " + "  ".join(f"{i:2}" for i in range(12)))
         print("   " + "-" * (4 * 12 + 1))
         for i, ligne in enumerate(self.grille):
-            print(f"{i:2} | " + " | ".join(ligne) + " |")
+            symbols = [("X" if cell == "1" else "O" if cell == "-1" else " ") for cell in ligne]
+            print(f"{i:2} | " + " | ".join(symbols) + " |")
             print("   " + "-" * (4 * 12 + 1))
 
     def Actions(self, joueur: str) -> list[int]:
@@ -72,37 +72,74 @@ class state():
         return state(grille=grille, joueur=joueur)
 
     def Adversaire(self,joueur:str)->str:
-        return "X" if joueur=="O" else "O"
+        return "1" if joueur=="-1" else "-1"
 
     def Utility(self,joueur_vise:str)->int:
         return 1 if self.Gagnant() == joueur_vise else -1 if self.Gagnant() == self.Adversaire(joueur_vise) else 0
 
+def max_value(s:"state",alpha:float,beta:float,joueur:str) -> int:
+    if s.Terminal_test():
+        return s.Utility(joueur_vise=joueur)
+    v=float('-inf')
+    for action in s.Actions(s):
+        v=max(v,s.min_value(s.Result(action,joueur),alpha,beta,joueur))
+        if v>=beta:
+            return v
+        alpha=max(alpha,v)
+        return v
+
+def min_value(s:"state",alpha:float,beta:float,joueur:str) -> int:
+    if s.Terminal_test():
+        return s.Utility(joueur_vise=joueur)
+    v=float('inf')
+    for action in s.Actions(s):
+        v=min(v, s.max_value(s.Result(action, joueur), alpha, beta, joueur))
+        if v<=alpha:
+            return v
+        beta=min(beta,v)
+        return v
+
+
+def alphabeta_decision(s: "state", joueur_vise: str):
+    best_score = float('-inf')
+    best_action = None
+    alpha = float('-inf')
+    beta = float('inf')
+    for action in s.Actions(s):
+        value = min_value(s.Result(action, joueur_vise), alpha, beta, joueur_vise)
+        if value > best_score:
+            best_score = value
+            best_action = action
+        alpha = max(alpha, best_score)
+    return best_action
+
+
 def main():
     """s=state()
     s.display()
-    print(s.Actions(joueur="X"))"""
+    print(s.Actions(joueur="1"))"""
 
     """s2=state(grille = [
-    ['O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
-    ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O'],
-    [' ', ' ', ' ', 'X', 'X', 'X', ' ', ' ', ' ', ' ', ' ', ' '],
-    ['O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
-    ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O'],
-    ['O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
+    ['-1', '1', '-1', '1', '-1', '1', '-1', '1', '-1', '1', '-1', '1'],
+    ['1', '-1', '1', '-1', '1', '-1', '1', '-1', '1', '-1', '1', '-1'],
+    [' ', ' ', ' ', '1', '1', '1', ' ', ' ', ' ', ' ', ' ', ' '],
+    ['-1', '1', '-1', '1', '-1', '1', '-1', '1', '-1', '1', '-1', '1'],
+    ['1', '-1', '1', '-1', '1', '-1', '1', '-1', '1', '-1', '1', '-1'],
+    ['-1', '1', '-1', '1', '-1', '1', '-1', '1', '-1', '1', '-1', '1'],
     ]
     )"""
 
     s3=state(grille = [
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-        [' ', ' ', ' ', 'X', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-        [' ', ' ', 'O', 'X', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-        [' ', 'X', 'O', 'O', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-        ['X', 'O', 'X', 'X', 'O', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', '1', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', '-1', '1', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', '1', '-1', '-1', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['1', '-1', '1', '1', '-1', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
     ]
     )
-    print(s3.Terminal_test(),s3.Actions(joueur="O"))
-    s3.Result(col_choice=2, joueur="X").Display()
+    print(s3.Terminal_test(),s3.Actions(joueur="-1"))
+    s3.Result(col_choice=2, joueur="1").Display()
 
 
 if __name__ == '__main__':
