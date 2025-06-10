@@ -68,11 +68,11 @@ class state():
         lignes = len(self.grille)
         colonnes = len(self.grille[0])
         score = 0
-        adversaire = 'X' if joueur_vise == 'O' else 'O'
+        adversaire = self.Adversaire(joueur_vise)
 
         def eval_line(line):
             count_j = line.count(joueur_vise)
-            count_a = line.count(adversaire)
+            count_a  = line.count(adversaire)
             if count_j > 0 and count_a == 0:
                 return 10 ** count_j
             elif count_a > 0 and count_j == 0:
@@ -121,66 +121,87 @@ class state():
         return self.gagnant()
 
 
-MAX_DEPTH = 4
+MAX_DEPTH = 5
+
+def IA_decision(s:"state"):
+    def max_value(s: "state", alpha: float, beta: float, depth: int) -> int:
+        if s.Terminal_test() or depth == 0:
+            return s.Utility(joueur_vise=s.joueur)
+        v = float('-inf')
+        for action in s.Actions(s.joueur):
+            v = max(v, min_value(s.Result(action, s.joueur), alpha, beta, depth - 1))
+            if v >= beta:
+                return v
+            alpha = max(alpha, v)
+        return v
 
 
-def max_value(s: "state", alpha: float, beta: float, joueur: str, depth: int) -> int:
-    if s.Terminal_test() or depth == 0:
-        return s.Utility(joueur_vise=joueur)
-    v = float('-inf')
-    for action in s.Actions(s.joueur):  # attention, joueur courant dans s
-        v = max(v, min_value(s.Result(action, s.joueur), alpha, beta, joueur, depth - 1))
-        if v >= beta:
-            return v
-        alpha = max(alpha, v)
-    return v
+    def min_value(s: "state", alpha: float, beta: float, depth: int) -> int:
+        if s.Terminal_test() or depth == 0:
+            return s.Utility(joueur_vise=s.joueur)
+        v = float('inf')
+        for action in s.Actions(s.joueur):
+            v = min(v, max_value(s.Result(action, s.joueur), alpha, beta, depth - 1))
+            if v <= alpha:
+                return v
+            beta = min(beta, v)
+        return v
 
 
-def min_value(s: "state", alpha: float, beta: float, joueur: str, depth: int) -> int:
-    if s.Terminal_test() or depth == 0:
-        return s.Utility(joueur_vise=joueur)
-    v = float('inf')
-    for action in s.Actions(s.joueur):
-        v = min(v, max_value(s.Result(action, s.joueur), alpha, beta, joueur, depth - 1))
-        if v <= alpha:
-            return v
-        beta = min(beta, v)
-    return v
+    def alphabeta_decision(s: "state"):
+        best_score = float('-inf')
+        best_action = None
+        alpha = float('-inf')
+        beta = float('inf')
+        for action in s.Actions(s.joueur):
+            value = min_value(s.Result(action, s.joueur), alpha, beta, MAX_DEPTH - 1)
+            if value > best_score:
+                best_score = value
+                best_action = action
+            alpha = max(alpha, best_score)
+        return best_action
+    return(alphabeta_decision(s))
 
 
-def alphabeta_decision(s: "state", joueur: str):
-    best_score = float('-inf')
-    best_action = None
-    alpha = float('-inf')
-    beta = float('inf')
-    for action in s.Actions(s.joueur):
-        value = min_value(s.Result(action, s.joueur), alpha, beta, joueur, MAX_DEPTH - 1)
-        if value > best_score:
-            best_score = value
-            best_action = action
-        alpha = max(alpha, best_score)
-    return best_action
+def jouer():
+    ok=False
+    while ok==False:
+        current_mode = input("Choisissez le mode de jeu : (a pour IA vs IA, b pour joueur vs IA, i pour IA vs joueur) : ").lower()
+        if current_mode == 'a':
+            print("\n--- Mode IA vs IA ---")
+            ia1_player = "1"
+            ia2_player = "-1"
+            s = state(joueur=ia1_player)
+            ok=True
+        elif current_mode == 'b':
+            joueur_humain = "1" if current_mode == 'j' else "-1"
+            joueur_ia = "-1" if joueur_humain == "1" else "1"
+            s = state(joueur=joueur_humain if current_mode == 'j' else joueur_ia)
+            ok=True
+        else:
+            print("réponse invalide réessayez")
 
 
-def play():
-    current_player = input("Qui commence ? (j pour joueur, i pour IA) : ").lower()
-    joueur_humain = "1" if current_player == 'j' else "-1"
-    joueur_ia = "-1" if joueur_humain == "1" else "1"
-
-    s = state(joueur=joueur_humain if current_player == 'j' else joueur_ia)
     nb_tours = 0
     s.Display()
 
     while not s.Terminal_test():
         print(f"\nTour du joueur {'X' if s.joueur == '1' else 'O'}")
 
-        if s.joueur == joueur_humain:
+        if current_mode == 'a':
+            print(f"IA {'X' if s.joueur == '1' else 'O'} réfléchit...")
+            start = time.time()
+            action = IA_decision(s)
+            end = time.time()
+            print(f"IA {'X' if s.joueur == '1' else 'O'} a joué la colonne {action} en {end - start:.2f} secondes")
+            s = s.Result(action, s.joueur)
+        elif s.joueur == joueur_humain:
             valid = False
             while not valid:
                 try:
                     col = int(input("Entrez la colonne (0-11) : "))
                     if col in s.Actions(s.joueur):
-                        s = s.Result(col, s.joueur)  # Ce Result alterne déjà le joueur
+                        s = s.Result(col, s.joueur)
                         valid = True
                     else:
                         print("Colonne pleine ou invalide.")
@@ -189,21 +210,21 @@ def play():
         else:
             print("IA réfléchit...")
             start = time.time()
-            action = alphabeta_decision(s, s.joueur)  # On passe s.joueur, pas joueur_ia
+            action = IA_decision(s)
             end = time.time()
             print(f"L'IA a joué la colonne {action} en {end - start:.2f} secondes")
             s = s.Result(action, s.joueur)
 
         s.Display()
-        nb_tours += 1  # Pas besoin d'inverser le joueur ici
+        nb_tours += 1
 
     gagnant = s.Gagnant()
     if gagnant:
-        print(f"\n🎉 Le joueur {'X' if gagnant == '1' else 'O'} a gagné !")
+        print(f"\nLe joueur {'X' if gagnant == '1' else 'O'} a gagné !")
     else:
         print("\nMatch nul.")
 
-    print("⏹ Fin de la partie.")
+    print("Fin de la partie.")
 
 
 def main():
@@ -233,7 +254,7 @@ def main():
     print(s3.Terminal_test(), s3.Actions(joueur="-1"))
     s3.Result(col_choice=2, joueur="1").Display()"""
 
-    play()
+    jouer()
 
 
 if __name__ == '__main__':
